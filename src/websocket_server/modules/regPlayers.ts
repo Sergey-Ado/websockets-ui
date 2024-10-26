@@ -4,23 +4,23 @@ import { sendMessage } from './utils.js';
 import { randomUUID } from 'crypto';
 
 export function regPlayer(idClient: string, data: string) {
-  const userData = JSON.parse(data);
-  let client = clients.find((s) => s.playerName == userData.name);
+  const dataParse = JSON.parse(data);
+  let client = clients.find((client) => client.playerName == dataParse.name);
   if (client) {
     const obj = {
-      ...userData,
+      ...dataParse,
       error: true,
       errorText: 'User is already logged in',
     };
     sendMessage(idClient, 'reg', obj);
-    console.log(`reg: User ${userData.name} is already logged in`);
+    console.log(`reg: User ${dataParse.name} is already logged in`);
     return;
   }
-  client = clients.find((s) => s.id == idClient);
+  client = clients.find((client) => client.id == idClient);
   if (!client) return;
-  const user = players.find((s) => s.name == userData.name);
+  const user = players.find((player) => player.name == dataParse.name);
   if (user) {
-    if (user.password == userData.password) {
+    if (user.password == dataParse.password) {
       const obj = {
         name: user.name,
         index: user.id,
@@ -30,7 +30,7 @@ export function regPlayer(idClient: string, data: string) {
       client.idPlayer = user.id;
       client.playerName = user.name;
       sendMessage(idClient, 'reg', obj);
-      console.log(`reg: User ${user.name} is logged in`);
+      console.log(`reg: User ${user.name} is logged in with id=${user.id}`);
       updateRoom();
     } else {
       const obj = {
@@ -45,8 +45,8 @@ export function regPlayer(idClient: string, data: string) {
   } else {
     const newUser = {
       id: randomUUID(),
-      name: userData.name,
-      password: userData.password,
+      name: dataParse.name,
+      password: dataParse.password,
     };
     players.push(newUser);
     const obj = {
@@ -58,7 +58,9 @@ export function regPlayer(idClient: string, data: string) {
     client.idPlayer = newUser.id;
     client.playerName = newUser.name;
     sendMessage(idClient, 'reg', obj);
-    console.log(`reg: User ${userData.name} registered and logged in`);
+    console.log(
+      `reg: User ${dataParse.name} registered and logged in with id=${newUser.id}`
+    );
     updateRoom();
   }
 }

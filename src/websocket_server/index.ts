@@ -1,7 +1,12 @@
 import { WebSocketServer } from 'ws';
 import { clients, rooms } from './modules/database.js';
 import { regPlayer } from './modules/regPlayers.js';
-import { createRoom, updateRoom } from './modules/roomCommands.js';
+import {
+  addUserToRoom,
+  createRoom,
+  deleteRoom,
+  updateRoom,
+} from './modules/roomCommands.js';
 import { randomUUID } from 'crypto';
 
 export function createWebSocket() {
@@ -12,12 +17,15 @@ export function createWebSocket() {
   wss.on('connection', (ws) => {
     const idClient = randomUUID();
     clients.push({ id: idClient, ws, idPlayer: null, playerName: '' });
+    console.log(`Client with id=${idClient} connected`);
 
     ws.on('message', (message) => {
       const messageParse: { type: string; data: string } = JSON.parse(
         message.toString()
       );
-      const idPlayer = clients.find((s) => s.id == idClient)?.idPlayer;
+      const idPlayer = clients.find(
+        (client) => client.id == idClient
+      )?.idPlayer;
       if (messageParse.type == 'reg' || !idPlayer) {
         regPlayer(idClient, messageParse.data);
       } else {
@@ -25,27 +33,27 @@ export function createWebSocket() {
           case 'create_room':
             createRoom(idClient);
             break;
+          case 'add_user_to_room':
+            addUserToRoom(idClient, messageParse.data);
+            break;
         }
       }
     });
 
     ws.on('close', () => {
-      const clientIndex = clients.findIndex((s) => s.id == idClient);
-      if (clientIndex == -1) return;
+      const indexClient = clients.findIndex((client) => client.id == idClient);
+      if (indexClient == -1) return;
 
-      const indexRoom = rooms.findIndex(
-        (room) => room.idPlayer == clients[clientIndex].idPlayer
-      );
-      if (indexRoom != -1) {
-        rooms.splice(indexRoom, 1);
-        updateRoom();
+      if (clients[indexClient].idPlayer)
+        deleteRoom(clients[indexClient].idPlayer);
+
+      const idPlayer = clients[indexClient].idPlayer;
+      if (idPlayer) {
+        console.log(`User with id=${idPlayer} has logged out`);
       }
 
-      const playerName = clients[clientIndex].playerName;
-      if (playerName.length > 0) {
-        console.log(`User ${playerName} has logged out`);
-      }
-      clients.splice(clientIndex, 1);
+      clients.splice(indexClient, 1);
+      console.log(`Client with id=${idClient} disconnected`);
     });
   });
 }
