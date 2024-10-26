@@ -6,8 +6,8 @@ export function parseInput(mes: string) {
 }
 
 export function sendMessage(idClient: string, type: string, data: unknown) {
-  const dataString = JSON.stringify(data);
+  const dataString = data == '' ? '' : JSON.stringify(data);
   const obj = { type, data: dataString, id: 0 };
-  const ws = clients.find((s) => s.idClient == idClient)?.ws;
+  const ws = clients.find((s) => s.id == idClient)?.ws;
   ws.send(JSON.stringify(obj));
 }
