@@ -1,5 +1,5 @@
 import { clients, players } from './database.js';
-import { updateRoom } from './roomCommands.js';
+import { updateRoom } from './rooms.js';
 import { sendMessage } from './utils.js';
 import { randomUUID } from 'crypto';
 

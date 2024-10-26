@@ -1,13 +1,14 @@
 import { WebSocketServer } from 'ws';
 import { clients, rooms } from './modules/database.js';
-import { regPlayer } from './modules/regPlayers.js';
+import { regPlayer } from './modules/regPlayer.js';
 import {
   addUserToRoom,
   createRoom,
   deleteRoom,
   updateRoom,
-} from './modules/roomCommands.js';
+} from './modules/rooms.js';
 import { randomUUID } from 'crypto';
+import { addShips } from './modules/ships.js';
 
 export function createWebSocket() {
   const wss = new WebSocketServer({ port: 3000 });
@@ -35,6 +36,9 @@ export function createWebSocket() {
             break;
           case 'add_user_to_room':
             addUserToRoom(idClient, messageParse.data);
+            break;
+          case 'add_ships':
+            addShips(messageParse.data);
             break;
         }
       }

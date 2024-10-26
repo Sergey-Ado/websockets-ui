@@ -47,15 +47,16 @@ function createGame(idMaster: string, idGuest: string) {
   const idGame = randomUUID();
   const game: Game = {
     id: idGame,
-    players: [idMaster, idGuest],
+    idPlayers: [idMaster, idGuest],
     currentPlayer: 0,
-    playerShips: [],
+    playerShips: [null, null],
     workArray: [],
   };
   games.push(game);
   [idMaster, idGuest].forEach((idPlayer) => {
     const idClient = clients.find((client) => client.idPlayer == idPlayer)?.id;
     if (idClient) sendMessage(idClient, 'create_game', { idGame, idPlayer });
+    console.log(`Game with id=${idGame} created`);
     deleteRoom(idPlayer);
   });
 }

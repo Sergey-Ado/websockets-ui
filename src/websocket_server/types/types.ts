@@ -19,20 +19,20 @@ export type Room = {
 
 export type Game = {
   id: string;
-  players: string[];
+  idPlayers: string[];
   currentPlayer: number;
   playerShips: Ships[];
   workArray: FullData[];
 };
 
-type FullData = {
+export type FullData = {
   ships: ShipFull[];
   field: boolean[][];
 };
 
-type Ships = Ship[];
+export type Ships = Ship[] | null;
 
-type ShipFull = {
+export type ShipFull = {
   decks: Point[];
   length: number;
   roundPoints: Point[];
