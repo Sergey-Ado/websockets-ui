@@ -30,7 +30,7 @@ export function regPlayer(idClient: string, data: string) {
       client.idPlayer = user.id;
       client.playerName = user.name;
       sendMessage(idClient, 'reg', obj);
-      console.log(`reg: User ${user.name} is logged in with id=${user.id}`);
+      console.log(`reg: Player ${user.name} is logged in with id=${user.id}`);
       updateRoom();
     } else {
       const obj = {
@@ -59,7 +59,7 @@ export function regPlayer(idClient: string, data: string) {
     client.playerName = newUser.name;
     sendMessage(idClient, 'reg', obj);
     console.log(
-      `reg: User ${dataParse.name} registered and logged in with id=${newUser.id}`
+      `reg: Player ${dataParse.name} registered and logged in with id=${newUser.id}`
     );
     updateRoom();
   }

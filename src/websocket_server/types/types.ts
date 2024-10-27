@@ -45,7 +45,12 @@ type Ship = {
   type: 'small' | 'medium' | 'large' | 'huge';
 };
 
-type Point = {
+export type Point = {
   x: number;
   y: number;
+};
+
+export type ResOfShot = {
+  res: string;
+  indexShip: number;
 };

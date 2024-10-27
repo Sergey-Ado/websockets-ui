@@ -1,24 +1,20 @@
 import { WebSocketServer } from 'ws';
-import { clients, rooms } from './modules/database.js';
+import { clients } from './modules/database.js';
 import { regPlayer } from './modules/regPlayer.js';
-import {
-  addUserToRoom,
-  createRoom,
-  deleteRoom,
-  updateRoom,
-} from './modules/rooms.js';
+import { addUserToRoom, createRoom, deleteRoom } from './modules/rooms.js';
 import { randomUUID } from 'crypto';
 import { addShips } from './modules/ships.js';
+import { attack } from './modules/game.js';
 
 export function createWebSocket() {
   const wss = new WebSocketServer({ port: 3000 });
 
-  console.log('Start websocket on port 3000...');
+  console.log('Start WebSocketServer on port 3000...');
 
   wss.on('connection', (ws) => {
     const idClient = randomUUID();
     clients.push({ id: idClient, ws, idPlayer: null, playerName: '' });
-    console.log(`Client with id=${idClient} connected`);
+    console.log(`Client id=${idClient} connected`);
 
     ws.on('message', (message) => {
       const messageParse: { type: string; data: string } = JSON.parse(
@@ -40,6 +36,10 @@ export function createWebSocket() {
           case 'add_ships':
             addShips(messageParse.data);
             break;
+          case 'attack':
+          case 'randomAttack':
+            attack(idClient, messageParse.data);
+            break;
         }
       }
     });
@@ -53,11 +53,11 @@ export function createWebSocket() {
 
       const idPlayer = clients[indexClient].idPlayer;
       if (idPlayer) {
-        console.log(`User with id=${idPlayer} has logged out`);
+        console.log(`Player id=${idPlayer} has logged out`);
       }
 
       clients.splice(indexClient, 1);
-      console.log(`Client with id=${idClient} disconnected`);
+      console.log(`Client id=${idClient} disconnected`);
     });
   });
 }

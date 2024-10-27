@@ -15,7 +15,7 @@ export function createRoom(idClient: string) {
   rooms.push(obj);
   sendMessage(idClient, 'create_room', '');
   console.log(
-    `create_room: User with id=${client.idPlayer} created a room with ${obj.id}`
+    `create_room: Player id=${client.idPlayer} created a room id=${obj.id}`
   );
   updateRoom();
 }
@@ -29,18 +29,20 @@ export function updateRoom() {
     });
   });
   clients.forEach((client) => sendMessage(client.id, 'update_room', arr));
-  console.log('update_room: list of rooms has been sent to all clients');
+  console.log('update_room: list of rooms has been sent to all players');
 }
 
 export function addUserToRoom(idClient: string, data: string) {
   const dataParse = JSON.parse(data);
   const idPlayer = clients.find((client) => client.id == idClient)?.idPlayer;
-  const idPlayerInRoom = rooms.find(
-    (room) => room.id == dataParse.indexRoom
-  )?.idPlayer;
-  if (!idPlayer || !idPlayerInRoom) return;
-  if (idPlayer == idPlayerInRoom) return;
-  createGame(idPlayerInRoom, idPlayer);
+  const room = rooms.find((room) => room.id == dataParse.indexRoom);
+  if (!room) return;
+  if (!idPlayer || !room.idPlayer) return;
+  if (idPlayer == room.idPlayer) return;
+  console.log(
+    `add_user_to_room: Player id=${idPlayer} added to room id=${room.id}`
+  );
+  createGame(room.idPlayer, idPlayer);
 }
 
 function createGame(idMaster: string, idGuest: string) {
@@ -56,7 +58,9 @@ function createGame(idMaster: string, idGuest: string) {
   [idMaster, idGuest].forEach((idPlayer) => {
     const idClient = clients.find((client) => client.idPlayer == idPlayer)?.id;
     if (idClient) sendMessage(idClient, 'create_game', { idGame, idPlayer });
-    console.log(`Game with id=${idGame} created`);
+    console.log(
+      `create_game: Game id=${idGame} created with player id=${idMaster} and player id=${idGuest}`
+    );
     deleteRoom(idPlayer);
   });
 }
@@ -65,7 +69,7 @@ export function deleteRoom(idPlayer: string) {
   const indexRoom = rooms.findIndex((room) => room.idPlayer == idPlayer);
   if (indexRoom != -1) {
     const idRoom = rooms[indexRoom].id;
-    console.log(`Room with id=${idRoom} removed`);
+    console.log(`Room id=${idRoom} removed`);
     rooms.splice(indexRoom, 1);
     updateRoom();
   }
