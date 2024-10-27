@@ -1,4 +1,5 @@
 import { FullData, Game, Point, ResOfShot } from '../types/types.js';
+import { botAttack } from './bot.js';
 import { clients, games, players } from './database.js';
 import { addWinner, updateWinners } from './player.js';
 import { sendMessage } from './utils.js';
@@ -21,11 +22,12 @@ export function startGame(idGame: string) {
   sendTurn(game);
 }
 
-export function attack(idClient: string, data: string) {
+export async function attack(idClient: string, data: string) {
   const idPlayer = clients.find((client) => client.id == idClient)?.idPlayer;
   if (!idPlayer) return;
   const game = games.find((game) => game.idPlayers.includes(idPlayer));
   if (!game) return;
+  if (game.botStep) return;
   if (idPlayer != game.idPlayers[game.currentPlayer]) return;
 
   let x: number;
@@ -61,7 +63,14 @@ export function attack(idClient: string, data: string) {
           status: 'miss',
         };
         sendMessageAllPlayer(game, 'attack', obj);
-        game.currentPlayer = (game.currentPlayer + 1) % 2;
+        if (game.idPlayers[1] == '') {
+          game.botStep = true;
+          if (await botAttack(game)) return;
+          game.botStep = false;
+          if (game.workArray[0].ships.length == 0) return;
+        } else {
+          game.currentPlayer = (game.currentPlayer + 1) % 2;
+        }
         console.log(`${command}: Player id=${idPlayer} missed`);
         sendTurn(game);
         break;
@@ -137,7 +146,7 @@ function shot(enemyWorkArray: FullData, x: number, y: number): ResOfShot {
   return { res: 'miss', indexShip: -1 };
 }
 
-function sendTurn(game: Game) {
+export function sendTurn(game: Game) {
   const idCurrentPlayer = game.idPlayers[game.currentPlayer];
   const obj = { currentPlayer: idCurrentPlayer };
   sendMessageAllPlayer(game, 'turn', obj);

@@ -25,6 +25,8 @@ export type Winner = {
 export type Game = {
   id: string;
   idPlayers: string[];
+  idBot?: string;
+  botStep?: boolean;
   currentPlayer: number;
   playerShips: Ships[];
   workArray: FullData[];
@@ -58,4 +60,27 @@ export type Point = {
 export type ResOfShot = {
   res: string;
   indexShip: number;
+};
+
+type CurrentState = 'state1' | 'state2' | 'finish' | 'random' | '';
+
+export type Bot = {
+  id: string;
+  dir: number;
+  shift: number;
+  dirGV: number;
+  dirGor: number;
+  dirVer: number;
+  dirShift: number;
+  currentState: CurrentState;
+  oldState: CurrentState;
+  oldI: number;
+  oldJ: number;
+  finI0: number;
+  finJ0: number;
+  finDI: number;
+  finDJ: number;
+  finI: number;
+  finJ: number;
+  varDir: Point[];
 };

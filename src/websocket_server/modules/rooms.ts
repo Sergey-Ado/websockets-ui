@@ -1,4 +1,5 @@
 import { Game } from '../types/types.js';
+import { initBot } from './bot.js';
 import { clients, games, rooms } from './database.js';
 import { sendMessage } from './utils.js';
 import { randomUUID } from 'crypto';
@@ -45,7 +46,7 @@ export function addUserToRoom(idClient: string, data: string) {
   createGame(room.idPlayer, idPlayer);
 }
 
-function createGame(idMaster: string, idGuest: string) {
+function createGame(idMaster: string, idGuest: string): Game {
   const idGame = randomUUID();
   const game: Game = {
     id: idGame,
@@ -58,11 +59,17 @@ function createGame(idMaster: string, idGuest: string) {
   [idMaster, idGuest].forEach((idPlayer) => {
     const idClient = clients.find((client) => client.idPlayer == idPlayer)?.id;
     if (idClient) sendMessage(idClient, 'create_game', { idGame, idPlayer });
-    console.log(
-      `create_game: Game id=${idGame} created with player id=${idMaster} and player id=${idGuest}`
-    );
+    if (idGuest != '')
+      console.log(
+        `create_game: Game id=${idGame} created with player id=${idMaster} and player id=${idGuest}`
+      );
+    else
+      console.log(
+        `single_game: Game id=${idGame} created with player id=${idMaster} and bot John Doe`
+      );
     deleteRoom(idPlayer);
   });
+  return game;
 }
 
 export function deleteRoom(idPlayer: string) {
@@ -73,4 +80,13 @@ export function deleteRoom(idPlayer: string) {
     rooms.splice(indexRoom, 1);
     updateRoom();
   }
+}
+
+export function createSingleGame(idClient: string) {
+  const idPlayer = clients.find((client) => client.id == idClient)?.idPlayer;
+  if (!idPlayer) return;
+
+  const game = createGame(idPlayer, '');
+  game.idBot = initBot();
+  game.botStep = false;
 }

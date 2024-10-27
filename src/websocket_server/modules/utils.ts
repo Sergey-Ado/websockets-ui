@@ -11,3 +11,7 @@ export function sendMessage(idClient: string, type: string, data: unknown) {
   const ws = clients.find((client) => client.id == idClient)?.ws;
   ws.send(JSON.stringify(obj));
 }
+
+export function testPoint(i: number, j: number): boolean {
+  return i >= 0 && i < 10 && j >= 0 && j < 10;
+}

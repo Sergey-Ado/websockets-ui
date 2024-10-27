@@ -1,7 +1,12 @@
 import { WebSocketServer } from 'ws';
 import { clients } from './modules/database.js';
 import { regPlayer } from './modules/player.js';
-import { addUserToRoom, createRoom, deleteRoom } from './modules/rooms.js';
+import {
+  addUserToRoom,
+  createRoom,
+  createSingleGame,
+  deleteRoom,
+} from './modules/rooms.js';
 import { randomUUID } from 'crypto';
 import { addShips } from './modules/ships.js';
 import { attack } from './modules/game.js';
@@ -39,6 +44,9 @@ export function createWebSocket() {
           case 'attack':
           case 'randomAttack':
             attack(idClient, messageParse.data);
+            break;
+          case 'single_play':
+            createSingleGame(idClient);
             break;
         }
       }
