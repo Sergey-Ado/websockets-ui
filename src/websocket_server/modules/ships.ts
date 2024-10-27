@@ -47,6 +47,5 @@ function createWorkArray(ships: Ships): FullData {
 
   fullData.field = new Array(10).fill(0);
   fullData.field = fullData.field.map((s) => new Array(10).fill(false));
-  fullData.field[2][2] = true;
   return fullData;
 }

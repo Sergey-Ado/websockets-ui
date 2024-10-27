@@ -17,6 +17,11 @@ export type Room = {
   playerName: string;
 };
 
+export type Winner = {
+  name: string;
+  wins: number;
+};
+
 export type Game = {
   id: string;
   idPlayers: string[];

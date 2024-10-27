@@ -1,5 +1,6 @@
 import { FullData, Game, Point, ResOfShot } from '../types/types.js';
-import { clients, games } from './database.js';
+import { clients, games, players } from './database.js';
+import { addWinner, updateWinners } from './player.js';
 import { sendMessage } from './utils.js';
 
 export function startGame(idGame: string) {
@@ -108,6 +109,11 @@ export function attack(idClient: string, data: string) {
 
           console.log(`finish: Player id=${idPlayer} won`);
           console.log(`finish: Game id=${game.id} deleted`);
+          const name = players.find((player) => player.id == idPlayer)?.name;
+          if (name) {
+            addWinner(name);
+            updateWinners();
+          }
           const indexGame = games.findIndex((s) => s.id == game.id);
           games.splice(indexGame, 1);
           return;

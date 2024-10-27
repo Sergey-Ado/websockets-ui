@@ -1,4 +1,5 @@
-import { clients, players } from './database.js';
+import { Winner } from '../types/types.js';
+import { clients, players, winners } from './database.js';
 import { updateRoom } from './rooms.js';
 import { sendMessage } from './utils.js';
 import { randomUUID } from 'crypto';
@@ -32,6 +33,7 @@ export function regPlayer(idClient: string, data: string) {
       sendMessage(idClient, 'reg', obj);
       console.log(`reg: Player ${user.name} is logged in with id=${user.id}`);
       updateRoom();
+      updateWinners();
     } else {
       const obj = {
         name: user.name,
@@ -62,5 +64,26 @@ export function regPlayer(idClient: string, data: string) {
       `reg: Player ${dataParse.name} registered and logged in with id=${newUser.id}`
     );
     updateRoom();
+    updateWinners();
   }
+}
+
+export function updateWinners() {
+  clients.forEach((client) =>
+    sendMessage(client.id, 'update_winners', winners)
+  );
+  console.log('update_winners: list of winners has been sent to all players');
+}
+
+export function addWinner(name: string) {
+  const winner = winners.find((winner) => winner.name == name);
+  if (winner) winner.wins++;
+  else winners.push({ name, wins: 1 });
+  winners.sort(sortFn);
+}
+
+function sortFn(a: Winner, b: Winner) {
+  if (a.wins != b.wins) return b.wins - a.wins;
+  if (a.name < b.name) return -1;
+  return 1;
 }

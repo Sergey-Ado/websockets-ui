@@ -1,6 +1,6 @@
 import { WebSocketServer } from 'ws';
 import { clients } from './modules/database.js';
-import { regPlayer } from './modules/regPlayer.js';
+import { regPlayer } from './modules/player.js';
 import { addUserToRoom, createRoom, deleteRoom } from './modules/rooms.js';
 import { randomUUID } from 'crypto';
 import { addShips } from './modules/ships.js';
