@@ -9,7 +9,7 @@ import {
 } from './modules/rooms.js';
 import { randomUUID } from 'crypto';
 import { addShips } from './modules/ships.js';
-import { attack } from './modules/game.js';
+import { attack, deleteGame } from './modules/game.js';
 
 export function createWebSocket() {
   const wss = new WebSocketServer({ port: 3000 });
@@ -56,16 +56,16 @@ export function createWebSocket() {
       const indexClient = clients.findIndex((client) => client.id == idClient);
       if (indexClient == -1) return;
 
-      if (clients[indexClient].idPlayer)
-        deleteRoom(clients[indexClient].idPlayer);
-
       const idPlayer = clients[indexClient].idPlayer;
       if (idPlayer) {
-        console.log(`Player id=${idPlayer} has logged out`);
+        console.log(`disconnect: Player id=${idPlayer} disconnected`);
+
+        deleteRoom(idPlayer, 'disconnect');
+        deleteGame(idPlayer);
       }
 
+      console.log(`disconnect: Client id=${idClient} deleted`);
       clients.splice(indexClient, 1);
-      console.log(`Client id=${idClient} disconnected`);
     });
   });
 }

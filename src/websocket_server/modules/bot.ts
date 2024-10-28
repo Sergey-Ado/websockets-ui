@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Bot, Game, Point, ShipFull } from '../types/types.js';
 import { bots, clients, games } from './database.js';
-import { sendMessage, testPoint } from './utils.js';
+import { sendMessage, testPoint } from '../utils/utils.js';
 import { sendTurn } from './game.js';
 
 const delay = 500;
@@ -95,7 +95,7 @@ export async function botAttack(game: Game): Promise<boolean> {
           break;
         }
         case 'shot': {
-          miss = await sendShot(idClient, bot.oldJ, bot.oldI);
+          miss = await sendShot(idClient, game, bot.oldJ, bot.oldI);
           bot.oldState = bot.currentState;
           bot.oldState = bot.currentState;
           bot.currentState = 'finish';
@@ -125,7 +125,8 @@ export async function botAttack(game: Game): Promise<boolean> {
       const res = botShot(bot.oldI, bot.oldJ, s, ships);
       if (res == 'miss')
         miss = await sendMiss(idClient, game, bot.oldJ, bot.oldI);
-      if (res == 'shot') miss = await sendShot(idClient, bot.oldJ, bot.oldI);
+      if (res == 'shot')
+        miss = await sendShot(idClient, game, bot.oldJ, bot.oldI);
       if (res == 'killed') miss = await sendKilled(idClient, game, s);
     }
     if (bot.currentState == 'finish') {
@@ -148,7 +149,7 @@ export async function botAttack(game: Game): Promise<boolean> {
         if (res == 'miss')
           miss = await sendMiss(idClient, game, bot.finJ, bot.finI);
         if (res == 'shot') {
-          miss = await sendShot(idClient, bot.finJ, bot.finI);
+          miss = await sendShot(idClient, game, bot.finJ, bot.finI);
           bot.finDI = bot.varDir[index].x;
           bot.finDJ = bot.varDir[index].y;
         }
@@ -178,7 +179,8 @@ export async function botAttack(game: Game): Promise<boolean> {
           bot.finDI = -bot.finDI;
           bot.finDJ = -bot.finDJ;
         }
-        if (res == 'shot') miss = await sendShot(idClient, bot.finJ, bot.finI);
+        if (res == 'shot')
+          miss = await sendShot(idClient, game, bot.finJ, bot.finI);
         if (res == 'killed') {
           miss = await sendKilled(idClient, game, s);
           bot.currentState = bot.oldState;
@@ -225,7 +227,7 @@ async function sendMiss(
   });
 
   sendMessage(idClient, 'attack', obj);
-  console.log('attack: bot John Doe missed');
+  console.log(`attack: bot id=${game.idBot} missed`);
   sendTurn(game);
 
   return true;
@@ -233,6 +235,7 @@ async function sendMiss(
 
 async function sendShot(
   idClient: string,
+  game: Game,
   x: number,
   y: number
 ): Promise<boolean> {
@@ -247,7 +250,7 @@ async function sendShot(
   });
 
   sendMessage(idClient, 'attack', obj);
-  console.log('attack: bot John Doe shot');
+  console.log(`attack: bot id=${game.idBot} shot`);
   return false;
 }
 
@@ -284,19 +287,23 @@ async function sendKilled(
     game.workArray[0].field[roundPoint.y][roundPoint.x] = true;
   });
 
-  console.log('attack: bot John Doe killed');
+  console.log(`attack: bot id=${game.idBot} killed`);
 
   ships.splice(s.index, 1);
   if (!ships.length) {
     const obj = { winPlayer: '' };
     sendMessage(idClient, 'finish', obj);
-    console.log('finish: bot John Doe won');
-    console.log(`finish: bot id=${game.idBot} deleted`);
+    console.log(`finish: bot id=${game.idBot} won`);
     const indexBot = bots.findIndex((bot) => bot.id == game.idBot);
-    bots.splice(indexBot, 1);
-    console.log(`finish: Game id=${game.id} deleted`);
+    if (indexBot != -1) {
+      bots.splice(indexBot, 1);
+      console.log(`finish: bot id=${game.idBot} deleted`);
+    }
     const indexGame = games.findIndex((g) => g.id == game.id);
-    games.splice(indexGame, 1);
+    if (indexGame != -1) {
+      games.splice(indexGame, 1);
+      console.log(`finish: Game id=${game.id} deleted`);
+    }
     return true;
   }
   return false;

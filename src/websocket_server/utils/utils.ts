@@ -1,4 +1,4 @@
-import { clients } from './database.js';
+import { clients } from '../modules/database.js';
 
 export function parseInput(mes: string) {
   const message = JSON.parse(mes);

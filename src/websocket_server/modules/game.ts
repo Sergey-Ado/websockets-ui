@@ -1,8 +1,8 @@
 import { FullData, Game, Point, ResOfShot } from '../types/types.js';
 import { botAttack } from './bot.js';
-import { clients, games, players } from './database.js';
+import { bots, clients, games, players } from './database.js';
 import { addWinner, updateWinners } from './player.js';
-import { sendMessage } from './utils.js';
+import { sendMessage } from '../utils/utils.js';
 
 export function startGame(idGame: string) {
   const game = games.find((game) => game.id == idGame);
@@ -16,9 +16,15 @@ export function startGame(idGame: string) {
     };
     sendMessage(idClient, 'start_game', obj);
   });
-  console.log(
-    `start_game: Game id=${idGame} started with player id=${game.idPlayers[0]} and player id=${game.idPlayers[1]}`
-  );
+  if (game.idPlayers[1] != '') {
+    console.log(
+      `start_game: Game id=${idGame} started with player id=${game.idPlayers[0]} and player id=${game.idPlayers[1]}`
+    );
+  } else {
+    console.log(
+      `start_game: Game id=${idGame} started with player id=${game.idPlayers[0]} and bot id=${game.idBot}`
+    );
+  }
   sendTurn(game);
 }
 
@@ -117,14 +123,22 @@ export async function attack(idClient: string, data: string) {
           sendMessageAllPlayer(game, 'finish', obj);
 
           console.log(`finish: Player id=${idPlayer} won`);
-          console.log(`finish: Game id=${game.id} deleted`);
           const name = players.find((player) => player.id == idPlayer)?.name;
           if (name) {
             addWinner(name);
             updateWinners();
           }
-          const indexGame = games.findIndex((s) => s.id == game.id);
-          games.splice(indexGame, 1);
+          const indexBot = bots.findIndex((bot) => bot.id == game.idBot);
+          if (indexBot != -1) {
+            bots.splice(indexBot, 1);
+            console.log(`finish: Bot id=${game.idBot} deleted`);
+          }
+
+          const indexGame = games.findIndex((g) => g.id == game.id);
+          if (indexGame != -1) {
+            games.splice(indexGame, 1);
+            console.log(`finish: Game id=${game.id} deleted`);
+          }
           return;
         }
         sendTurn(game);
@@ -159,4 +173,42 @@ function sendMessageAllPlayer(game: Game, type: string, obj: unknown) {
     if (!idClient) return;
     sendMessage(idClient, type, obj);
   });
+}
+
+export function deleteGame(idPlayer: string) {
+  const indexGame = games.findIndex((game) =>
+    game.idPlayers.includes(idPlayer)
+  );
+  if (indexGame == -1) return;
+
+  const game = games[indexGame];
+
+  if (game.idPlayers[1] == '') {
+    console.log(`disconnect: bot id=${game.idBot} won`);
+
+    const indexBot = bots.findIndex((bot) => bot.id == game.idBot);
+    if (indexBot != -1) {
+      bots.splice(indexBot, 1);
+      console.log(`disconnect: bot id=${game.idBot} deleted`);
+    }
+  } else {
+    const indexPlayer = game.idPlayers.findIndex((id) => id == idPlayer);
+    const idEnemy = game.idPlayers[(indexPlayer + 1) % 2];
+
+    console.log(`disconnect: Player id=${idEnemy} won`);
+
+    const obj = {
+      winPlayer: idEnemy,
+    };
+    sendMessageAllPlayer(game, 'finish', obj);
+
+    const name = players.find((player) => player.id == idEnemy)?.name;
+    if (name) {
+      addWinner(name);
+      updateWinners();
+    }
+  }
+
+  games.splice(indexGame, 1);
+  console.log(`disconnect: Game id=${game.id} deleted`);
 }

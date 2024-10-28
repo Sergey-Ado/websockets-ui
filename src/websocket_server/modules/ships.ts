@@ -1,7 +1,7 @@
 import { FullData, Point, ShipFull, Ships } from '../types/types.js';
 import { games } from './database.js';
 import { startGame } from './game.js';
-import { testPoint } from './utils.js';
+import { testPoint } from '../utils/utils.js';
 
 export function addShips(data: string) {
   const dataParse = JSON.parse(data);
@@ -15,11 +15,6 @@ export function addShips(data: string) {
   console.log(
     `add_ships: Received a list of ships from the player id=${game.idPlayers[indexPlayer]}`
   );
-
-  if (game.idPlayers[1] == '') {
-    game.workArray[1] = createAllRandomShips();
-    game.playerShips[1] = [];
-  }
 
   if (game.playerShips[0] && game.playerShips[1]) startGame(game.id);
 }

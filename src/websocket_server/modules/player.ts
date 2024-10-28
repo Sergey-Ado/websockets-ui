@@ -1,7 +1,7 @@
 import { Winner } from '../types/types.js';
 import { clients, players, winners } from './database.js';
 import { updateRoom } from './rooms.js';
-import { sendMessage } from './utils.js';
+import { sendMessage } from '../utils/utils.js';
 import { randomUUID } from 'crypto';
 
 export function regPlayer(idClient: string, data: string) {

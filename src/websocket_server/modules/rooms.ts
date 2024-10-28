@@ -1,7 +1,8 @@
 import { Game } from '../types/types.js';
 import { initBot } from './bot.js';
 import { clients, games, rooms } from './database.js';
-import { sendMessage } from './utils.js';
+import { createAllRandomShips } from './ships.js';
+import { sendMessage } from '../utils/utils.js';
 import { randomUUID } from 'crypto';
 
 export function createRoom(idClient: string) {
@@ -46,7 +47,7 @@ export function addUserToRoom(idClient: string, data: string) {
   createGame(room.idPlayer, idPlayer);
 }
 
-function createGame(idMaster: string, idGuest: string): Game {
+function createGame(idMaster: string, idGuest: string) {
   const idGame = randomUUID();
   const game: Game = {
     id: idGame,
@@ -59,24 +60,18 @@ function createGame(idMaster: string, idGuest: string): Game {
   [idMaster, idGuest].forEach((idPlayer) => {
     const idClient = clients.find((client) => client.idPlayer == idPlayer)?.id;
     if (idClient) sendMessage(idClient, 'create_game', { idGame, idPlayer });
-    if (idGuest != '')
-      console.log(
-        `create_game: Game id=${idGame} created with player id=${idMaster} and player id=${idGuest}`
-      );
-    else
-      console.log(
-        `single_game: Game id=${idGame} created with player id=${idMaster} and bot John Doe`
-      );
-    deleteRoom(idPlayer);
+    console.log(
+      `create_game: Game id=${idGame} created with player id=${idMaster} and player id=${idGuest}`
+    );
+    deleteRoom(idPlayer, 'create_game');
   });
-  return game;
 }
 
-export function deleteRoom(idPlayer: string) {
+export function deleteRoom(idPlayer: string, command: string) {
   const indexRoom = rooms.findIndex((room) => room.idPlayer == idPlayer);
   if (indexRoom != -1) {
     const idRoom = rooms[indexRoom].id;
-    console.log(`Room id=${idRoom} removed`);
+    console.log(`${command}: Room id=${idRoom} removed`);
     rooms.splice(indexRoom, 1);
     updateRoom();
   }
@@ -86,7 +81,23 @@ export function createSingleGame(idClient: string) {
   const idPlayer = clients.find((client) => client.id == idClient)?.idPlayer;
   if (!idPlayer) return;
 
-  const game = createGame(idPlayer, '');
+  const idGame = randomUUID();
+  const game: Game = {
+    id: idGame,
+    idPlayers: [idPlayer, ''],
+    currentPlayer: 0,
+    playerShips: [null, null],
+    workArray: [],
+  };
   game.idBot = initBot();
   game.botStep = false;
+  game.workArray[1] = createAllRandomShips();
+  game.playerShips[1] = [];
+
+  games.push(game);
+  if (idClient) sendMessage(idClient, 'create_game', { idGame, idPlayer });
+  console.log(
+    `single_game: Game id=${idGame} created with player id=${idPlayer} and bot id=${game.idBot}`
+  );
+  deleteRoom(idPlayer, 'single_game');
 }
