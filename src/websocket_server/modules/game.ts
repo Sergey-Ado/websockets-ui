@@ -58,6 +58,7 @@ export async function attack(idClient: string, data: string) {
   }
 
   if (game.workArray[indexEnemy].field[y][x]) {
+    sendTurn(game);
   } else {
     const resShot = shot(game.workArray[indexEnemy], x, y);
     game.workArray[indexEnemy].field[y][x] = true;
