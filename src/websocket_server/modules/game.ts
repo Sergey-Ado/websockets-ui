@@ -193,9 +193,19 @@ export function deleteGame(idPlayer: string) {
     }
   } else {
     const indexPlayer = game.idPlayers.findIndex((id) => id == idPlayer);
-    const idEnemy = game.idPlayers[(indexPlayer + 1) % 2];
+    const indexEnemy = (indexPlayer + 1) % 2;
+    const idEnemy = game.idPlayers[indexEnemy];
 
     console.log(`disconnect: Player id=${idEnemy} won`);
+
+    const idClient = clients.find((client) => client.idPlayer == idEnemy)?.id;
+    if (idClient) {
+      const obj = {
+        ships: game.playerShips[indexEnemy],
+        currentPlayerIndex: idEnemy,
+      };
+      sendMessage(idClient, 'start_game', obj);
+    }
 
     const obj = {
       winPlayer: idEnemy,
